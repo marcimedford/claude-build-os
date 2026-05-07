@@ -1,0 +1,65 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /c/Users/MarciMedford/Desktop/Random && git add -A; git diff --cached --quiet || git commit -m \"auto-sync $(date)\"; git push origin HEAD 2>&1 || true",
+            "timeout": 30,
+            "statusMessage": "Syncing to GitHub..."
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(node -e ':*)",
+      "mcp__1846795f-93d4-4f11-9514-72c01538f7be__list_bases",
+      "WebFetch(domain:docs.google.com)",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__1846795f-93d4-4f11-9514-72c01538f7be__list_tables_for_base",
+      "WebFetch(domain:doc-08-60-sheets.googleusercontent.com)",
+      "mcp__mcp-registry__search_mcp_registry",
+      "mcp__5002e9ba-de1e-46e3-af40-2ee62bca1d63__search_threads",
+      "Bash(node auth.js)",
+      "Bash(node -e ' *)",
+      "Bash(node sync.js)",
+      "Bash(node generate-followups.js)",
+      "Bash(node update-lastcontact.js)",
+      "Bash(node update-all-lastcontact.js)",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "mcp__Claude_in_Chrome__computer",
+      "Bash(node update-dinner-status.js)",
+      "Bash(node build-linkedin-outreach.js)",
+      "Bash(node -e \"import\\('dotenv/config'\\).then\\(\\(\\) => { const keys = Object.keys\\(process.env\\).filter\\(k => k.includes\\('APOLLO'\\) || k.includes\\('API'\\)\\); console.log\\(keys\\); }\\)\")",
+      "mcp__b20f6b83-9e88-4b23-b802-4c795bc2b67e__apollo_mixed_people_api_search",
+      "mcp__b20f6b83-9e88-4b23-b802-4c795bc2b67e__apollo_people_bulk_match",
+      "mcp__b20f6b83-9e88-4b23-b802-4c795bc2b67e__apollo_people_match",
+      "Bash(node write-linkedin-outreach.js)",
+      "mcp__adcf9fe7-50ca-4415-8717-5170de626d26__typeahead_search",
+      "mcp__Claude_in_Chrome__get_page_text",
+      "Bash(node create-followup-drafts.js)",
+      "mcp__5002e9ba-de1e-46e3-af40-2ee62bca1d63__list_drafts",
+      "WebSearch",
+      "Bash(node add-warm-linkedin.js)",
+      "Bash(node -e \"import\\('dotenv/config'\\).then\\(\\(\\) => console.log\\('APOLLO_API_KEY set:', !!process.env.APOLLO_API_KEY, '| length:', process.env.APOLLO_API_KEY?.length\\)\\)\")",
+      "Bash(node -e \"import\\('dotenv/config'\\).then\\(\\(\\) => { const keys = Object.keys\\(process.env\\).filter\\(k => k.includes\\('APOLLO'\\) || k.includes\\('AFFINITY'\\) || k.includes\\('HARMONIC'\\)\\); console.log\\(keys\\); }\\)\")",
+      "Bash(node enrich-warm-linkedin.js)",
+      "Bash(Get-Content \"C:\\\\Users\\\\MARCIM~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-MarciMedford-Desktop-Random\\\\3e3d2047-6965-4e6d-9dca-9da562017331\\\\tasks\\\\bylxdrg98.output\" -Wait)",
+      "mcp__adcf9fe7-50ca-4415-8717-5170de626d26__get_companies",
+      "Bash(python3 -c ' *)",
+      "Bash(node write-ceo-data.js)",
+      "Bash(git -C C:/Users/MarciMedford/Desktop/Random status)",
+      "Bash(git init *)",
+      "Bash(git remote *)",
+      "Bash(git add *)",
+      "Bash(git -C /c/Users/MarciMedford/Desktop/Random commit -m ' *)",
+      "Bash(git -C /c/Users/MarciMedford/Desktop/Random log --oneline origin/master)",
+      "Bash(git -C /c/Users/MarciMedford/Desktop/Random remote -v)"
+    ]
+  }
+}

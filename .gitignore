@@ -20,6 +20,9 @@ Thumbs.db
 .buildos-config
 *.pem
 *.key
+*credentials*.json
+*-credentials.json
+*-secret*.json
 
 # Node
 node_modules/
@@ -43,9 +46,7 @@ tests/test_arm_study_*
 stores/arm-study/
 config/study/
 
-# ═══════════════════════════════════════════════════════════════════════════
 # Personal session artifacts — stay local, not shared with framework users
-# ═══════════════════════════════════════════════════════════════════════════
 
 # User journal (per-session narrative — each framework user keeps their own)
 docs/current-state.md
@@ -57,12 +58,6 @@ tasks/session-log-*.md
 tasks/decisions-personal.md
 
 # All per-topic in-flight work artifacts under tasks/
-# (proposals, challenges, judgments, refines, plans, findings, designs,
-#  reviews, explores, thinks, debates, polishes, QAs, analyses,
-#  investigations, validations, specs, flows, premortems, audits,
-#  benchmarks, variance studies, critiques, ground-truths, adjudications,
-#  arm outputs, coverage, mappings, anonymization summaries, etc.)
-# Only the curated governance files stay in git (whitelist below).
 tasks/*.md
 tasks/*.json
 tasks/*/
