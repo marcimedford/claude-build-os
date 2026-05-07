@@ -1,0 +1,22 @@
+# Secrets & credentials
+.env
+*credentials*.json
+*-credentials.json
+*-secret*.json
+*.pem
+*.key
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Spreadsheets (local data files)
+*.xlsx
+*.xls
+*.csv
+
+# Claude settings
+.claude/

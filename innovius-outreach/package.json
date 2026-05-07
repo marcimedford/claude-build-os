@@ -1,0 +1,21 @@
+{
+  "name": "innovius-outreach",
+  "version": "1.0.0",
+  "description": "Innovius Capital outreach automation — classify, generate, and send investor emails",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "affinity-mcp": "node affinity-mcp-server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "dotenv": "^16.4.5",
+    "googleapis": "^140.0.0",
+    "node-fetch": "^3.3.2",
+    "csv-stringify": "^6.4.6",
+    "minimist": "^1.2.8",
+    "chalk": "^5.3.0",
+    "inquirer": "^9.2.15"
+  }
+}
