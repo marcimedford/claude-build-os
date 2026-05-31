@@ -326,9 +326,10 @@ def parse_airtable_records(raw_records):
             else:
                 category = "On Our Radar"
 
-        # Status: Tracking / Passed / Active Diligence - Do Not Share
+        # Status: Active / Tracking / Passed / Active Diligence - Do Not Share
+        # "Active" = upcoming fundraise, actively engaged — shown under In Diligence filter
         raw_status = fields.get("fldTwzM2bVwlmnZz5") or ""
-        if raw_status not in ("Passed", "Active Diligence - Do Not Share"):
+        if raw_status not in ("Active", "Passed", "Active Diligence - Do Not Share"):
             raw_status = "Tracking"
 
         # Founded year (number → string for display)
@@ -1097,7 +1098,8 @@ function statusBadgeClass(s) {
   const ls = s.toLowerCase();
   if (ls.includes("active diligence")) return "badge-diligence";
   if (ls === "in market") return "badge-inmarket";
-  if (ls === "active" || ls === "tracking") return "badge-tracking";
+  if (ls === "active") return "badge-inmarket";
+  if (ls === "tracking") return "badge-tracking";
   if (ls === "passed") return "badge-passed";
   return "";
 }
@@ -1208,9 +1210,13 @@ function getVisibleDeals() {
     if (activeCategory === "inmarket" && !isInMarketDeal) return false;
     if (activeCategory === "radar"    &&  isInMarketDeal) return false;
     // Filter row 2: sub-status (all | Tracking | Passed | In Diligence)
+    // "In Diligence" includes both Active (upcoming fundraise) and Active Diligence - Do Not Share
     if (activeStatus !== "all") {
+      const ds = (d.status || "").toLowerCase();
       if (activeStatus === "Tracking") {
-        if (ds !== "tracking" && ds !== "active") return false;
+        if (ds !== "tracking") return false;
+      } else if (activeStatus === "Active Diligence - Do Not Share") {
+        if (ds !== "active diligence - do not share" && ds !== "active") return false;
       } else {
         if (d.status !== activeStatus) return false;
       }
