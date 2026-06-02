@@ -312,25 +312,31 @@ def parse_airtable_records(raw_records):
         if isinstance(logged_by, list):
             logged_by = ", ".join(str(x) for x in logged_by)
 
-        # Category: read from dedicated Airtable field; fall back to inference if blank.
-        # "In Market" = company is actively fundraising right now.
-        # Signals: (1) Raise Amount field is populated, OR (2) fundraising keywords in description/metrics.
+        # Status: Tracking / Passed / Active Diligence - Do Not Share
+        # "Active" in Airtable is treated as Tracking for display purposes.
+        raw_status = fields.get("fldTwzM2bVwlmnZz5") or ""
+        if raw_status not in ("Tracking", "Passed", "Active Diligence - Do Not Share"):
+            raw_status = "Tracking"  # catches "Active" and any unknowns
+
+        # Category: "In Market" = actively fundraising right now.
+        # Signals (in priority order):
+        #   1. Explicitly set in Airtable Category field
+        #   2. Status is Active Diligence - Do Not Share
+        #   3. Raise Amount field is populated
+        #   4. Fundraising keywords in description or metrics
+        # Everything else = "On Our Radar"
         category = fields.get(CATEGORY_FIELD_ID) or ""
         if not category:
             raise_amount = fields.get(RAISE_AMOUNT_FIELD_ID) or ""
             description = fields.get("fldPVIumh8sQ7DYqc") or ""
             metrics = fields.get("fldHXu2bbwvjbEQgA") or ""
             haystack = (description + " " + metrics).lower()
-            if raise_amount or any(kw in haystack for kw in IN_MARKET_KEYWORDS):
+            if (raw_status == "Active Diligence - Do Not Share"
+                    or raise_amount
+                    or any(kw in haystack for kw in IN_MARKET_KEYWORDS)):
                 category = "In Market"
             else:
                 category = "On Our Radar"
-
-        # Status: Active / Tracking / Passed / Active Diligence - Do Not Share
-        # "Active" = upcoming fundraise, actively engaged — shown under In Diligence filter
-        raw_status = fields.get("fldTwzM2bVwlmnZz5") or ""
-        if raw_status not in ("Active", "Passed", "Active Diligence - Do Not Share"):
-            raw_status = "Tracking"
 
         # Founded year (number → string for display)
         founded_raw = fields.get("fldm4y3AQlXwSVv7k")
@@ -626,10 +632,15 @@ body {
 .badge-nopriority { background: #f3f4f6; color: #6b7280; }
 
 /* Status badges */
-.badge-inmarket { background: #d1fae5; color: #065f46; }
+.badge-active { background: #d1fae5; color: #065f46; }
 .badge-tracking { background: #fef3c7; color: #92400e; }
 .badge-passed { background: #fee2e2; color: #991b1b; }
 .badge-diligence { background: #e0e7ff; color: #3730a3; }
+
+/* Category badges */
+.cat-badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; }
+.cat-inmarket { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+.cat-radar { background: #f3f4f6; color: #374151; border: 1px solid #d1d5db; }
 
 /* Right panel — Deals */
 #deal-panel {
@@ -715,7 +726,7 @@ body {
 }
 .status-select:focus { box-shadow: 0 0 0 2px rgba(20,43,17,0.4); }
 .status-select { min-width: 80px; }
-.status-select.badge-inmarket { background: #d1fae5; color: #065f46; }
+.status-select.badge-active { background: #d1fae5; color: #065f46; }
 .status-select.badge-tracking { background: #fef3c7; color: #92400e; }
 .status-select.badge-passed { background: #fee2e2; color: #991b1b; }
 .status-select.badge-diligence { background: #e0e7ff; color: #3730a3; }
@@ -1097,11 +1108,16 @@ function statusBadgeClass(s) {
   if (!s) return "";
   const ls = s.toLowerCase();
   if (ls.includes("active diligence")) return "badge-diligence";
-  if (ls === "in market") return "badge-inmarket";
-  if (ls === "active") return "badge-inmarket";
   if (ls === "tracking") return "badge-tracking";
   if (ls === "passed") return "badge-passed";
-  return "";
+  return "badge-tracking";
+}
+
+function categoryBadgeHtml(category) {
+  if (!category) return "";
+  const isInMarket = category.toLowerCase() === "in market";
+  const cls = isInMarket ? "cat-inmarket" : "cat-radar";
+  return `<span class="cat-badge ${cls}">${esc(category)}</span>`;
 }
 
 function truncate(str, n) {
@@ -1209,14 +1225,10 @@ function getVisibleDeals() {
     const isInMarketDeal = cat === "in market";
     if (activeCategory === "inmarket" && !isInMarketDeal) return false;
     if (activeCategory === "radar"    &&  isInMarketDeal) return false;
-    // Filter row 2: sub-status (all | Tracking | Passed | In Diligence)
-    // "In Diligence" includes both Active (upcoming fundraise) and Active Diligence - Do Not Share
+    // Filter row 2: sub-status (all | Active | Tracking | Passed | In Diligence)
     if (activeStatus !== "all") {
-      const ds = (d.status || "").toLowerCase();
-      if (activeStatus === "Tracking") {
-        if (ds !== "tracking") return false;
-      } else if (activeStatus === "Active Diligence - Do Not Share") {
-        if (ds !== "active diligence - do not share" && ds !== "active") return false;
+      if (activeStatus === "Active Diligence - Do Not Share") {
+        if ((d.status || "").toLowerCase() !== "active diligence - do not share") return false;
       } else {
         if (d.status !== activeStatus) return false;
       }
@@ -1300,10 +1312,9 @@ function renderDeals() {
     ].filter(Boolean).join(" · ");
     const fundingMetaHtml = fundingMeta
       ? `<div class="deal-card-funding-meta">${fundingMeta}</div>` : "";
-    const allStatuses = ["In Market", "Tracking", "Passed", "Active Diligence - Do Not Share"];
-    const effectiveStatus = (d.status === "Active") ? "Tracking" : d.status;
+    const allStatuses = ["Tracking", "Passed", "Active Diligence - Do Not Share"];
     const statusOpts = allStatuses.map(s =>
-      `<option value="${s}"${effectiveStatus === s ? " selected" : ""}>${s === "Active Diligence - Do Not Share" ? "In Diligence" : s}</option>`).join("");
+      `<option value="${s}"${d.status === s ? " selected" : ""}>${s === "Active Diligence - Do Not Share" ? "In Diligence" : s}</option>`).join("");
     const isDiligence = (d.status || "").toLowerCase().includes("active diligence");
     const shareChecked = isDiligenceShareable(d.id) ? "checked" : "";
     const shareToggle = isDiligence && selectedFund
@@ -1312,7 +1323,8 @@ function renderDeals() {
     return `<div class="deal-card" role="listitem" data-id="${esc(d.id)}">
       <div class="deal-card-header">
         <span class="deal-card-name">${esc(d.company_name)}</span>
-        <div class="deal-card-actions">
+        <div class="deal-card-actions" style="display:flex;align-items:center;gap:6px">
+          ${categoryBadgeHtml(d.category)}
           <select class="status-select ${statusClass}" onchange="updateDealStatus('${esc(d.id)}', this)" title="Change status">
             ${statusOpts}
           </select>
@@ -1578,12 +1590,11 @@ function updateExportOutput() {
   document.getElementById("email-body").value    = buildEmailFromDeals(selected);
 }
 
-// Strip internal sourcing notes from descriptions before external export.
-// Handles both whole-line and mid-paragraph "Flagged by X" style sentences.
+// Strip internal sourcing notes and relationship management language from descriptions.
 function cleanDesc(text) {
   if (!text) return text;
-  // Remove sentences containing sourcing attribution anywhere in them
-  const sentencePattern = /[^.!?\n]*\b(flagged by|sourced by|source:|introduced by|referred by|noted by|via [A-Z])[^.!?\n]*[.!?]?/gi;
+  // Remove sentences containing internal relationship or sourcing references
+  const sentencePattern = /[^.!?\n]*\b(flagged by|sourced by|source:|introduced by|referred by|noted by|via [A-Z]|[A-Z]{1,3} to reach out|[A-Z]{1,3} to follow up|[A-Z]{1,3} to connect|[A-Z]{1,3} to intro|[A-Z]{1,3} to send|[A-Z]{1,3} to schedule|[A-Z]{1,3} to set up|[A-Z]{1,3} to ping|reach out to them|follow up with|will reach out|will follow up|planning to reach|Innovius to|will intro|making intro|making an intro)[^.!?\n]*[.!?]?/gi;
   return text.replace(sentencePattern, "").replace(/\s{2,}/g, " ").trim();
 }
 
@@ -1817,7 +1828,7 @@ def main():
             print(f"  Affinity cache saved to affinity_cache.json")
 
     # Generate HTML
-    generated_at = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
+    generated_at = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).strftime("%Y-%m-%dT%H:%M:%S")
     html = generate_html(deals, funds, generated_at, airtable_pat, airtable_base, airtable_table)
 
     with open(output_path, "w", encoding="utf-8") as f:
